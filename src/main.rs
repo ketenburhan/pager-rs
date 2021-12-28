@@ -64,6 +64,26 @@ impl State {
         self.pos.0 += 1;
         true
     }
+
+    fn pgup(&mut self) -> bool {
+        if self.pos.1 >= self.size.1 as usize {
+            self.pos.1 -= self.size.1 as usize - 1;
+            return true;
+        } else if self.pos.1 != 0 {
+            self.pos.1 = 0;
+            return true;
+        }
+        false
+    }
+
+    fn pgdown(&mut self) -> bool {
+        let new = (self.pos.1 + self.size.1 as usize).min(self.content.lines().count()) - 1;
+        if new != self.pos.1 {
+            self.pos.1 = new;
+            return true;
+        }
+        false
+    }
 }
 
 fn main() -> std::io::Result<()> {
@@ -92,6 +112,8 @@ fn main() -> std::io::Result<()> {
             Ok(Key::ArrowDown) => state.down(),
             Ok(Key::ArrowLeft) => state.left(),
             Ok(Key::ArrowRight) => state.right(),
+            Ok(Key::PageUp) => state.pgup(),
+            Ok(Key::PageDown) => state.pgdown(),
             Ok(Key::Escape) | Ok(Key::Char('q')) | Ok(Key::Char('Q')) | Err(_) => break,
             _ => false,
         };
