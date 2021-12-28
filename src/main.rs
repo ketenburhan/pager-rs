@@ -84,6 +84,19 @@ impl State {
         }
         false
     }
+
+    fn home(&mut self) -> bool {
+        if self.pos.1 > 0 {
+            self.pos.1 = 0;
+            return true;
+        }
+        false
+    }
+
+    fn end(&mut self) -> bool {
+        self.pos.1 = self.content.lines().count() - self.size.1 as usize + 1;
+        true
+    }
 }
 
 fn main() -> std::io::Result<()> {
@@ -114,6 +127,8 @@ fn main() -> std::io::Result<()> {
             Ok(Key::ArrowRight) => state.right(),
             Ok(Key::PageUp) => state.pgup(),
             Ok(Key::PageDown) => state.pgdown(),
+            Ok(Key::Home) => state.home(),
+            Ok(Key::End) => state.end(),
             Ok(Key::Escape) | Ok(Key::Char('q')) | Ok(Key::Char('Q')) | Err(_) => break,
             _ => false,
         };
