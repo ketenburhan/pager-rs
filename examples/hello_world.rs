@@ -5,7 +5,7 @@ fn main() -> std::io::Result<()> {
 }"#
     .to_string();
 
-    let status_bar = StatusBar::with_title("Hello World program in rust".to_string());
+    let status_bar = StatusBar::new("Hello World program in rust".to_string());
 
     pager_rs::run(content, status_bar)?;
 

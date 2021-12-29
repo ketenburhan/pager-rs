@@ -1,3 +1,5 @@
+use crossterm::style::{Attribute, Color, ContentStyle, StyledContent, Stylize};
+
 use crate::State;
 
 #[derive(Clone, Debug)]
@@ -60,18 +62,28 @@ pub struct StatusBar {
     pub line_count: u16,
     pub line_layouts: Vec<StatusBarLayout>,
     pub title: String,
+    pub theme: ContentStyle,
 }
 
 impl StatusBar {
-    pub fn with_title(title: String) -> Self {
+    pub fn new(title: String) -> Self {
         Self {
             title,
             ..Default::default()
         }
     }
 
-    pub fn get_visible(&self, state: &State) -> String {
-        self.line_layouts
+    pub fn with_theme(title: String, theme: ContentStyle) -> Self {
+        Self {
+            title,
+            theme,
+            ..Default::default()
+        }
+    }
+
+    pub fn get_visible(&self, state: &State) -> StyledContent<String> {
+        let bar = self
+            .line_layouts
             .iter()
             .map(|layout| {
                 let parts = layout.get_parts(state);
@@ -87,16 +99,22 @@ impl StatusBar {
                 }
             })
             .collect::<Vec<String>>()
-            .join("\n")
+            .join("\n");
+        self.theme.apply(bar)
     }
 }
 
 impl Default for StatusBar {
     fn default() -> Self {
+        let theme = ContentStyle::new()
+            .with(Color::Black)
+            .on(Color::White)
+            .attribute(Attribute::Bold);
         Self {
             line_count: 1,
             line_layouts: vec![StatusBarLayout::default()],
             title: "***".to_string(),
+            theme,
         }
     }
 }

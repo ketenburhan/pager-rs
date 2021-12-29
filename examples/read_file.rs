@@ -10,7 +10,7 @@ fn main() -> std::io::Result<()> {
         let mut content = String::new();
         file.read_to_string(&mut content)?;
 
-        let status_bar = StatusBar::with_title(file_name);
+        let status_bar = StatusBar::new(file_name);
 
         pager_rs::run(content, status_bar)?;
     } else {
