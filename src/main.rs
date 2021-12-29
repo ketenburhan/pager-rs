@@ -6,7 +6,7 @@ use std::{
 
 use crossterm::{
     cursor,
-    event::{self, Event, KeyCode, KeyEvent},
+    event::{self, Event, KeyCode, KeyEvent, MouseEvent, MouseEventKind},
     execute,
     terminal::{self, disable_raw_mode, enable_raw_mode, ClearType},
     QueueableCommand,
@@ -117,6 +117,7 @@ fn main() -> std::io::Result<()> {
     let mut out = stdout();
     out.queue(cursor::Hide)?;
     out.queue(terminal::EnterAlternateScreen)?;
+    execute!(out, event::EnableMouseCapture)?;
 
     let mut state = State {
         pos: (0, 0),
@@ -133,26 +134,33 @@ fn main() -> std::io::Result<()> {
     loop {
         let read_event = event::read()?;
         let flash = match read_event {
-            Event::Key(keyevent) => {
-                let KeyEvent { code, .. } = keyevent;
-                match code {
-                    KeyCode::Up => state.up(),
-                    KeyCode::Down => state.down(),
-                    KeyCode::Left => state.left(),
-                    KeyCode::Right => state.right(),
-                    KeyCode::Home => state.home(),
-                    KeyCode::End => state.end(),
-                    KeyCode::PageUp => state.pgup(),
-                    KeyCode::PageDown => state.pgdown(),
-                    KeyCode::Char('Q') | KeyCode::Char('q') | KeyCode::Esc => break,
-                    _ => false,
-                }
-            }
+            Event::Key(KeyEvent { code, .. }) => match code {
+                KeyCode::Up => state.up(),
+                KeyCode::Down => state.down(),
+                KeyCode::Left => state.left(),
+                KeyCode::Right => state.right(),
+                KeyCode::Home => state.home(),
+                KeyCode::End => state.end(),
+                KeyCode::PageUp => state.pgup(),
+                KeyCode::PageDown => state.pgdown(),
+                KeyCode::Char('Q') | KeyCode::Char('q') | KeyCode::Esc => break,
+                _ => false,
+            },
+            Event::Mouse(ev) => match ev {
+                MouseEvent {
+                    kind: MouseEventKind::ScrollUp,
+                    ..
+                } => state.up(),
+                MouseEvent {
+                    kind: MouseEventKind::ScrollDown,
+                    ..
+                } => state.down(),
+                _ => false,
+            },
             Event::Resize(x, y) => {
                 state.size = (x, y);
                 true
             }
-            _ => false,
         };
         if flash {
             disable_raw_mode()?;
