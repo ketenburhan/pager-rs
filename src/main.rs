@@ -1,8 +1,16 @@
-use std::{env, fs::File, io::Read, time::Duration};
+use std::{
+    env,
+    fs::File,
+    io::{stdout, Read, Write},
+};
 
-use console::{Key, Term};
-use std::thread;
-
+use crossterm::{
+    cursor,
+    event::{self, Event, KeyCode, KeyEvent},
+    execute,
+    terminal::{self, disable_raw_mode, enable_raw_mode, ClearType},
+    QueueableCommand,
+};
 fn line_indicator_format(line_num: usize, line_count: usize) -> String {
     let str_num = line_num.to_string();
     let max = line_count.to_string().len();
@@ -106,40 +114,59 @@ fn main() -> std::io::Result<()> {
     let mut content = String::new();
     file.read_to_string(&mut content)?;
 
-    let term = Term::stdout();
-    term.hide_cursor()?;
-    term.clear_screen()?;
+    let mut out = stdout();
+    out.queue(cursor::Hide)?;
+    out.queue(terminal::EnterAlternateScreen)?;
 
-    let size = term.size();
     let mut state = State {
         pos: (0, 0),
-        size: (size.1, size.0),
+        size: terminal::size()?,
         content,
     };
 
-    term.write_line(&state.get_visible())?;
+    execute!(out, cursor::MoveTo(0, 0))?;
 
+    out.write_all(&state.get_visible().bytes().collect::<Vec<u8>>())?;
+    out.flush()?;
+
+    enable_raw_mode()?;
     loop {
-        let flash = match term.read_key() {
-            Ok(Key::ArrowUp) => state.up(),
-            Ok(Key::ArrowDown) => state.down(),
-            Ok(Key::ArrowLeft) => state.left(),
-            Ok(Key::ArrowRight) => state.right(),
-            Ok(Key::PageUp) => state.pgup(),
-            Ok(Key::PageDown) => state.pgdown(),
-            Ok(Key::Home) => state.home(),
-            Ok(Key::End) => state.end(),
-            Ok(Key::Escape) | Ok(Key::Char('q')) | Ok(Key::Char('Q')) | Err(_) => break,
+        let read_event = event::read()?;
+        let flash = match read_event {
+            Event::Key(keyevent) => {
+                let KeyEvent { code, .. } = keyevent;
+                match code {
+                    KeyCode::Up => state.up(),
+                    KeyCode::Down => state.down(),
+                    KeyCode::Left => state.left(),
+                    KeyCode::Right => state.right(),
+                    KeyCode::Home => state.home(),
+                    KeyCode::End => state.end(),
+                    KeyCode::PageUp => state.pgup(),
+                    KeyCode::PageDown => state.pgdown(),
+                    KeyCode::Char('Q') | KeyCode::Char('q') | KeyCode::Esc => break,
+                    _ => false,
+                }
+            }
+            Event::Resize(x, y) => {
+                state.size = (x, y);
+                true
+            }
             _ => false,
         };
         if flash {
-            term.clear_screen()?;
-            term.write_line(&state.get_visible())?;
+            disable_raw_mode()?;
+            execute!(out, cursor::MoveTo(0, 0))?;
+            out.queue(terminal::Clear(ClearType::All))?;
+            out.write_all(&state.get_visible().bytes().collect::<Vec<u8>>())?;
+            out.flush()?;
+            enable_raw_mode()?;
         }
     }
-    thread::sleep(Duration::from_millis(200));
 
-    term.clear_line()?;
-    term.show_cursor()?;
+    disable_raw_mode()?;
+    out.queue(cursor::Show)?;
+    out.queue(terminal::LeaveAlternateScreen)?;
+
     Ok(())
 }
