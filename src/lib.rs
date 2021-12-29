@@ -80,6 +80,7 @@ pub fn run(content: String, status_bar: StatusBar) -> std::io::Result<()> {
     }
 
     disable_raw_mode()?;
+    execute!(out, event::DisableMouseCapture)?;
     out.queue(cursor::Show)?;
     out.queue(terminal::LeaveAlternateScreen)?;
 
