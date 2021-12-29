@@ -89,9 +89,9 @@ impl StatusBar {
                 let parts = layout.get_parts(state);
                 let width = state.size.0 as usize;
                 if parts[0].len() > width {
-                    String::new()
+                    parts[0].chars().take(width).collect()
                 } else if parts[0].len() + parts[1].len() > width {
-                    parts[0].clone()
+                    parts[0].clone() + &" ".repeat(width - parts[0].len())
                 } else {
                     parts[0].clone()
                         + &" ".repeat(width - parts[0].len() - parts[1].len())
