@@ -1,4 +1,4 @@
-use pager_rs::{run as pager_run, StatusBar};
+use pager_rs::StatusBar;
 use std::{env, fs::File, io::Read};
 fn main() -> std::io::Result<()> {
     let args: Vec<String> = env::args().collect();
@@ -12,7 +12,7 @@ fn main() -> std::io::Result<()> {
 
         let status_bar = StatusBar::with_title(file_name);
 
-        pager_run(content, status_bar)?;
+        pager_rs::run(content, status_bar)?;
     } else {
         eprintln!("Missing Filename");
     }
