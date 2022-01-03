@@ -1,6 +1,9 @@
-use crossterm::event::KeyCode;
+use crossterm::{
+    event::KeyCode,
+    style::{Attribute, Color, ContentStyle, Stylize},
+};
 
-use crate::status_bar::StatusBar;
+use crate::{run_with_state, status_bar::StatusBar, StatusBarLayout, StatusBarLayoutItem};
 
 pub fn line_indicator_format(line_num: String, line_count: usize) -> String {
     let max = line_count.to_string().len();
@@ -84,11 +87,36 @@ impl Default for CommandList {
                 cmd: KeyCode::Char('h'),
                 desc: "Toggles help text visiblity".to_string(),
                 func: &|state: &mut State| {
-                    if state.temp_content.is_none() {
-                        state.open_alter_content(state.get_help_text());
-                    } else {
-                        state.close_alter_content();
-                    }
+                    let theme = ContentStyle::new()
+                        .with(Color::Black)
+                        .on(Color::White)
+                        .attribute(Attribute::Bold);
+                    let commands = CommandList(
+                        state
+                            .commands
+                            .0
+                            .clone()
+                            .into_iter()
+                            .filter(|command| matches!(command, Command::Key {cmd, ..} if *cmd != KeyCode::Char('h')))
+                            .collect(),
+                    );
+
+                    let mut help = State {
+                        pos: (0, 0),
+                        size: state.size,
+                        content: state.get_help_text(),
+                        status_bar: StatusBar {
+                            line_layouts: vec![StatusBarLayout {
+                                left: vec![StatusBarLayoutItem::Text("Quit (q)".to_owned())],
+                                right: vec![],
+                            }],
+                            title: "Help text".to_owned(),
+                            theme,
+                        },
+                        commands,
+                        running: true,
+                    };
+                    run_with_state(&mut help).unwrap();
                     true
                 },
             },
@@ -102,8 +130,6 @@ pub struct State {
     pub status_bar: StatusBar,
     pub commands: CommandList,
     pub running: bool,
-    pub temp_content: Option<String>,
-    pub temp_pos: Option<(usize, usize)>,
 }
 
 impl State {
@@ -151,21 +177,6 @@ impl State {
             })
             .collect::<Vec<String>>()
             .join("\n\n")
-    }
-    pub fn open_alter_content(&mut self, content: String) {
-        if self.temp_content.is_none() {
-            self.temp_content = Some(self.content.clone());
-            self.temp_pos = Some(self.pos);
-        }
-        self.content = content;
-        self.pos = (0, 0);
-    }
-    pub fn close_alter_content(&mut self) {
-        if self.temp_content.is_some() {
-            self.content = self.temp_content.as_ref().unwrap().clone();
-            self.temp_content = None;
-            self.pos = self.temp_pos.unwrap();
-        }
     }
 }
 impl State {
