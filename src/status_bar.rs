@@ -59,7 +59,6 @@ impl StatusBarLayout {
 
 #[derive(Clone, Debug)]
 pub struct StatusBar {
-    pub line_count: u16,
     pub line_layouts: Vec<StatusBarLayout>,
     pub title: String,
     pub theme: ContentStyle,
@@ -111,7 +110,6 @@ impl Default for StatusBar {
             .on(Color::White)
             .attribute(Attribute::Bold);
         Self {
-            line_count: 1,
             line_layouts: vec![StatusBarLayout::default()],
             title: "***".to_string(),
             theme,

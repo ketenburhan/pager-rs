@@ -71,7 +71,7 @@ pub fn run(content: String, status_bar: StatusBar) -> std::io::Result<()> {
             write!(out, "{}", state.get_visible())?;
             out.queue(cursor::MoveTo(
                 0,
-                state.size.1 - state.status_bar.line_count,
+                state.size.1 - state.status_bar.line_layouts.len() as u16,
             ))?;
             write!(out, "{}", state.status_bar.get_visible(&state))?;
             out.flush()?;

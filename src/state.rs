@@ -17,7 +17,7 @@ impl State {
             .lines()
             .enumerate()
             .skip(self.pos.1)
-            .take(self.size.1 as usize - self.status_bar.line_count as usize)
+            .take(self.size.1 as usize - self.status_bar.line_layouts.len())
             .map(|(index, line)| -> String {
                 let line_indicator =
                     line_indicator_format((index + 1).to_string(), self.content.lines().count());
