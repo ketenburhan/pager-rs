@@ -1,9 +1,8 @@
 use crate::status_bar::StatusBar;
 
-pub fn line_indicator_format(line_num: usize, line_count: usize) -> String {
-    let str_num = line_num.to_string();
+pub fn line_indicator_format(line_num: String, line_count: usize) -> String {
     let max = line_count.to_string().len();
-    " ".repeat(max - str_num.len()) + &str_num + "|"
+    " ".repeat(max - line_num.len()) + &line_num + "|"
 }
 
 pub struct State {
@@ -20,7 +19,8 @@ impl State {
             .skip(self.pos.1)
             .take(self.size.1 as usize - self.status_bar.line_count as usize)
             .map(|(index, line)| -> String {
-                let line_indicator = line_indicator_format(index + 1, self.content.lines().count());
+                let line_indicator =
+                    line_indicator_format((index + 1).to_string(), self.content.lines().count());
                 let line_indicator_len = line_indicator.len();
                 line_indicator
                     + line
