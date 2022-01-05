@@ -1,4 +1,4 @@
-use pager_rs::StatusBar;
+use pager_rs::{CommandList, State, StatusBar};
 use std::{env, fs::File, io::Read};
 fn main() -> std::io::Result<()> {
     let args: Vec<String> = env::args().collect();
@@ -12,7 +12,13 @@ fn main() -> std::io::Result<()> {
 
         let status_bar = StatusBar::new(file_name);
 
-        pager_rs::run(content, status_bar)?;
+        let mut state = State::new(content, status_bar, CommandList::default())?;
+
+        pager_rs::init()?;
+
+        pager_rs::run(&mut state)?;
+
+        pager_rs::finish()?;
     } else {
         eprintln!("Missing Filename");
     }

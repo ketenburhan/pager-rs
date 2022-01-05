@@ -1,9 +1,10 @@
 use crossterm::{
     event::KeyCode,
     style::{Attribute, Color, ContentStyle, Stylize},
+    terminal,
 };
 
-use crate::{run_with_state, status_bar::StatusBar, StatusBarLayout, StatusBarLayoutItem};
+use crate::{run, status_bar::StatusBar, StatusBarLayout, StatusBarLayoutItem};
 
 pub fn line_indicator_format(line_num: String, line_count: usize) -> String {
     let max = line_count.to_string().len();
@@ -23,7 +24,9 @@ pub enum Command {
         func: &'static dyn Fn(&mut State) -> bool,
     },
 }
+
 pub struct CommandList(pub Vec<Command>);
+
 impl Default for CommandList {
     fn default() -> Self {
         Self(vec![
@@ -116,23 +119,44 @@ impl Default for CommandList {
                         commands,
                         running: true,
                     };
-                    run_with_state(&mut help).unwrap();
+                    run(&mut help).unwrap();
                     true
                 },
             },
         ])
     }
 }
+
 pub struct State {
     pub pos: (usize, usize),
     pub size: (u16, u16),
     pub content: String,
     pub status_bar: StatusBar,
     pub commands: CommandList,
-    pub running: bool,
+    pub(crate) running: bool,
 }
 
 impl State {
+    pub fn new(
+        content: String,
+        status_bar: StatusBar,
+        commands: CommandList,
+    ) -> std::io::Result<Self> {
+        Ok(Self {
+            pos: (0, 0),
+            size: terminal::size()?,
+            content,
+            status_bar,
+            commands,
+            running: true,
+        })
+    }
+    pub fn is_running(&self) -> bool {
+        self.running
+    }
+    pub fn quit(&mut self) {
+        self.running = false;
+    }
     pub fn get_help_text(&self) -> String {
         if self.commands.0.is_empty() {
             return String::from("No commands");
@@ -179,6 +203,7 @@ impl State {
             .join("\n\n")
     }
 }
+
 impl State {
     pub fn get_visible(&self) -> String {
         self.content

@@ -12,7 +12,7 @@ pub use status_bar::*;
 mod state;
 pub use state::*;
 
-pub fn run_with_state(state: &mut State) -> std::io::Result<()> {
+pub fn run(state: &mut State) -> std::io::Result<()> {
     let mut out = stdout();
     disable_raw_mode()?;
     execute!(
@@ -95,31 +95,20 @@ pub fn run_with_state(state: &mut State) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn run(content: String, status_bar: StatusBar) -> std::io::Result<()> {
+pub fn init() -> std::io::Result<()> {
     let mut out = stdout();
     execute!(
         out,
         terminal::EnterAlternateScreen,
         event::EnableMouseCapture,
-    )?;
+    )
+}
 
-    let mut state = State {
-        pos: (0, 0),
-        size: terminal::size()?,
-        content,
-        status_bar,
-        commands: CommandList::default(),
-        running: true,
-    };
-
-    run_with_state(&mut state)?;
-
+pub fn finish() -> std::io::Result<()> {
+    let mut out = stdout();
     execute!(
         out,
         event::DisableMouseCapture,
-        cursor::Show,
         terminal::LeaveAlternateScreen
-    )?;
-
-    Ok(())
+    )
 }

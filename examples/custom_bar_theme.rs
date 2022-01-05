@@ -1,5 +1,5 @@
 use crossterm::style::{Attribute, Color, ContentStyle, Stylize};
-use pager_rs::StatusBar;
+use pager_rs::{CommandList, State, StatusBar};
 fn main() -> std::io::Result<()> {
     let content = r#"fn main() {
     println!("Hello World!");
@@ -15,7 +15,13 @@ fn main() -> std::io::Result<()> {
         theme,
     );
 
-    pager_rs::run(content, status_bar)?;
+    let mut state = State::new(content, status_bar, CommandList::default())?;
+
+    pager_rs::init()?;
+
+    pager_rs::run(&mut state)?;
+
+    pager_rs::finish()?;
 
     Ok(())
 }
