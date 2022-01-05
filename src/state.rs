@@ -286,7 +286,7 @@ impl State {
             .map(|(index, line)| -> String {
                 let line_indicator = if self.show_line_numbers {
                     format!(
-                        "{:line_count$}|",
+                        "{:line_count$}│",
                         index + 1,
                         line_count = max_line_number_width
                     )
