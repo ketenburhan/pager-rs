@@ -17,7 +17,6 @@ pub fn run(state: &mut State) -> std::io::Result<()> {
     disable_raw_mode()?;
     execute!(
         out,
-        cursor::Hide,
         terminal::Clear(ClearType::All),
         cursor::MoveTo(0, 0),
         Print(state.get_visible()),
@@ -90,7 +89,6 @@ pub fn run(state: &mut State) -> std::io::Result<()> {
     }
 
     disable_raw_mode()?;
-    execute!(out, cursor::Show,)?;
 
     Ok(())
 }
@@ -101,6 +99,7 @@ pub fn init() -> std::io::Result<()> {
         out,
         terminal::EnterAlternateScreen,
         event::EnableMouseCapture,
+        cursor::Hide,
     )
 }
 
@@ -109,6 +108,7 @@ pub fn finish() -> std::io::Result<()> {
     execute!(
         out,
         event::DisableMouseCapture,
-        terminal::LeaveAlternateScreen
+        terminal::LeaveAlternateScreen,
+        cursor::Show
     )
 }
