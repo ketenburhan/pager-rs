@@ -87,12 +87,12 @@ impl CommandList {
                 func: &|state: &mut State| state.right(),
             },
             Command {
-                cmd: vec![Key(KeyCode::Home)],
+                cmd: vec![Key(KeyCode::Home), Key(KeyCode::Char('g'))],
                 desc: "Go to start".to_string(),
                 func: &|state: &mut State| state.home(),
             },
             Command {
-                cmd: vec![Key(KeyCode::End)],
+                cmd: vec![Key(KeyCode::End), Key(KeyCode::Char('G'))],
                 desc: "Go to end".to_string(),
                 func: &|state: &mut State| state.end(),
             },
