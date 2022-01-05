@@ -49,7 +49,7 @@ impl StatusBarLayout {
                     StatusBarLayoutItem::Persentage => {
                         format!(
                             "{:.0}",
-                            (state.pos.1 as f32 / content_line_count as f32) * 100.0
+                            ((state.pos.1 + 1) as f32 / content_line_count as f32) * 100.0
                         )
                     }
                     StatusBarLayoutItem::LineCount => content_line_count.to_string(),
