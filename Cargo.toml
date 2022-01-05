@@ -1,7 +1,13 @@
 [package]
 name = "pager-rs"
 version = "0.1.0"
+authors = ["Burhan Keten <ketenburhan@protonmail.com>"]
 edition = "2021"
+description = "Cross-platform, customizable terminal pager library for rust."
+repository = "https://github.com/ketenburhan/pager-rs"
+license = "MIT"
+keywords = ["terminal", "tui", "library"]
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
