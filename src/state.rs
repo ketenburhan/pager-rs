@@ -6,11 +6,6 @@ use crossterm::{
 
 use crate::{run, status_bar::StatusBar, StatusBarLayout, StatusBarLayoutItem};
 
-pub fn line_indicator_format(line_num: String, line_count: usize) -> String {
-    let max = line_count.to_string().len();
-    " ".repeat(max - line_num.len()) + &line_num + "│"
-}
-
 #[derive(Clone, PartialEq)]
 pub enum CommandType {
     Colon(String),
@@ -243,6 +238,7 @@ impl State {
 
 impl State {
     pub fn get_visible(&self) -> String {
+        let max_line_number_width = self.content.lines().count().to_string().len();
         self.content
             .lines()
             .enumerate()
@@ -250,7 +246,11 @@ impl State {
             .take(self.size.1 as usize - self.status_bar.line_layouts.len())
             .map(|(index, line)| -> String {
                 let line_indicator = if self.show_line_numbers {
-                    line_indicator_format((index + 1).to_string(), self.content.lines().count())
+                    format!(
+                        "{:line_count$}|",
+                        index + 1,
+                        line_count = max_line_number_width
+                    )
                 } else {
                     String::new()
                 };
