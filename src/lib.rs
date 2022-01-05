@@ -44,9 +44,9 @@ pub fn run(state: &mut State) -> std::io::Result<()> {
                     let buf = buf.lines().next().unwrap();
 
                     let found = state.commands.0.clone().into_iter().find(
-                        |command| matches!(command, Command::Colon { cmd, .. } if *cmd == buf),
+                        |command| matches!(command, Command { cmd, .. } if cmd.contains(&CommandType::Colon(buf.to_string()))),
                     );
-                    let retrn = if let Some(Command::Colon { func, .. }) = found {
+                    let retrn = if let Some(Command { func, .. }) = found {
                         func(state)
                     } else {
                         false
