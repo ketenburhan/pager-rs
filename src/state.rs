@@ -374,7 +374,12 @@ impl State {
 
     /// Move cursor to the end.
     pub fn end(&mut self) -> bool {
-        self.pos.1 = self.content.lines().count() - self.size.1 as usize + 1;
+        let line_count = self.content.lines().count();
+        self.pos.1 = if line_count > self.size.1 as usize {
+            line_count - self.size.1 as usize + 1
+        } else {
+            0
+        };
         true
     }
 }
