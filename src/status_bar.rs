@@ -11,9 +11,13 @@ pub enum StatusBarLayoutItem {
     Title,
 }
 
+/// Layout for a [`StatusBar`] line.
 #[derive(Clone, Debug)]
 pub struct StatusBarLayout {
+    /// Items that sticked to the left.
     pub left: Vec<StatusBarLayoutItem>,
+
+    /// Items that sticked to the left.
     pub right: Vec<StatusBarLayoutItem>,
 }
 
@@ -34,6 +38,7 @@ impl Default for StatusBarLayout {
     }
 }
 impl StatusBarLayout {
+    /// Get left and right parts as string.
     fn get_parts(&self, state: &State) -> [String; 2] {
         let content_line_count = state.content.lines().count();
         [self.left.clone(), self.right.clone()].map(|part| {
@@ -65,6 +70,7 @@ pub struct StatusBar {
 }
 
 impl StatusBar {
+    /// Create a [`StatusBar`] with title.
     pub fn new(title: String) -> Self {
         Self {
             title,
@@ -72,6 +78,7 @@ impl StatusBar {
         }
     }
 
+    /// Create a [`StatusBar`] with title and theme.
     pub fn with_theme(title: String, theme: ContentStyle) -> Self {
         Self {
             title,
@@ -80,6 +87,7 @@ impl StatusBar {
         }
     }
 
+    /// Get status bar text to be printed on terminal.
     pub fn get_visible(&self, state: &State) -> StyledContent<String> {
         let bar = self
             .line_layouts

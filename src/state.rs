@@ -6,19 +6,26 @@ use crossterm::{
 
 use crate::{run, status_bar::StatusBar, StatusBarLayout, StatusBarLayoutItem};
 
+/// Type of [`Command`]
 #[derive(Clone, PartialEq)]
 pub enum CommandType {
+    /// Waits for `:` key and then the command input, until Enter is pressed.
     Colon(String),
+    /// Waits for key input.
     Key(KeyCode),
 }
 
 #[derive(Clone)]
 pub struct Command {
+    /// When any of the values matched with input from user, command will be executed.
     pub cmd: Vec<CommandType>,
+    /// Description of the command, can be seen in help text.
     pub desc: String,
+    /// The function that runs when command executed.
     pub func: &'static dyn Fn(&mut State) -> bool,
 }
 
+/// Container of list of commands.
 pub struct CommandList(pub Vec<Command>);
 
 impl From<CommandList> for Vec<Command> {
@@ -28,6 +35,7 @@ impl From<CommandList> for Vec<Command> {
 }
 
 impl CommandList {
+    /// Combine [`CommandList`]'s into one.
     pub fn combine<T>(list: Vec<T>) -> Self
     where
         T: Into<Vec<Command>>,
@@ -38,6 +46,8 @@ impl CommandList {
         }
         Self(v)
     }
+
+    /// Default 'quit' command
     pub fn quit() -> Self {
         use CommandType::*;
         Self(vec![Command {
@@ -49,6 +59,10 @@ impl CommandList {
             },
         }])
     }
+
+    /// Default bundle of 'navigation' commands.
+    ///
+    /// Includes: `Arrow`, `Home/End`, `PageUp/PageDown` keys
     pub fn navigation() -> Self {
         use CommandType::*;
         Self(vec![
@@ -94,6 +108,8 @@ impl CommandList {
             },
         ])
     }
+
+    /// Default 'help' command
     pub fn help() -> Self {
         use CommandType::*;
         Self(vec![Command {
@@ -128,6 +144,8 @@ impl CommandList {
             },
         }])
     }
+
+    /// Default 'toggle line numbers' command
     pub fn toggle_line_numbers() -> Self {
         use CommandType::*;
         Self(vec![Command {
@@ -153,16 +171,31 @@ impl Default for CommandList {
 }
 
 pub struct State {
+    /// Cursor position in content.
+    ///
+    /// `(x, y)`
     pub pos: (usize, usize),
+
+    /// Size of terminal screen.
+    ///
+    /// `(width, height)`
     pub size: (u16, u16),
+
+    /// Content to show.
     pub content: String,
+
+    /// status bar at the bottom.
     pub status_bar: StatusBar,
+
     pub commands: CommandList,
+
     pub(crate) running: bool,
+
     pub show_line_numbers: bool,
 }
 
 impl State {
+    /// Create new [`State`]
     pub fn new(
         content: String,
         status_bar: StatusBar,
@@ -178,12 +211,17 @@ impl State {
             show_line_numbers: true,
         })
     }
+
     pub fn is_running(&self) -> bool {
         self.running
     }
+
+    /// Terminate [`State`]
     pub fn quit(&mut self) {
         self.running = false;
     }
+
+    /// Default help text formatter
     pub fn get_help_text(&self) -> String {
         if self.commands.0.is_empty() {
             return String::from("No commands");
@@ -237,6 +275,7 @@ impl State {
 }
 
 impl State {
+    /// Get text to be printed on terminal except for the [`StatusBar`].
     pub fn get_visible(&self) -> String {
         let max_line_number_width = self.content.lines().count().to_string().len();
         self.content
@@ -269,6 +308,7 @@ impl State {
 }
 
 impl State {
+    /// Move cursor up.
     pub fn up(&mut self) -> bool {
         if self.pos.1 != 0 {
             self.pos.1 -= 1;
@@ -277,6 +317,7 @@ impl State {
         false
     }
 
+    /// Move cursor down.
     pub fn down(&mut self) -> bool {
         if self.pos.1 != self.content.lines().count() - 1 {
             self.pos.1 += 1;
@@ -285,6 +326,7 @@ impl State {
         false
     }
 
+    /// Move cursor left.
     pub fn left(&mut self) -> bool {
         if self.pos.0 != 0 {
             self.pos.0 -= 1;
@@ -293,11 +335,13 @@ impl State {
         false
     }
 
+    /// Move cursor right.
     pub fn right(&mut self) -> bool {
         self.pos.0 += 1;
         true
     }
 
+    /// Move cursor one page up.
     pub fn pgup(&mut self) -> bool {
         if self.pos.1 >= self.size.1 as usize {
             self.pos.1 -= self.size.1 as usize - 1;
@@ -309,6 +353,7 @@ impl State {
         false
     }
 
+    /// Move cursor one page down.
     pub fn pgdown(&mut self) -> bool {
         let new = (self.pos.1 + self.size.1 as usize).min(self.content.lines().count()) - 1;
         if new != self.pos.1 {
@@ -318,6 +363,7 @@ impl State {
         false
     }
 
+    /// Move cursor to the start.
     pub fn home(&mut self) -> bool {
         if self.pos.1 > 0 {
             self.pos.1 = 0;
@@ -326,6 +372,7 @@ impl State {
         false
     }
 
+    /// Move cursor to the end.
     pub fn end(&mut self) -> bool {
         self.pos.1 = self.content.lines().count() - self.size.1 as usize + 1;
         true
@@ -333,6 +380,7 @@ impl State {
 }
 
 impl State {
+    /// Find and execute command matching with pressed key.
     pub fn match_key_event(&mut self, code: KeyCode) -> bool {
         let mut commands = self.commands.0.clone();
         let found = commands

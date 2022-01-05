@@ -1,3 +1,17 @@
+/*!
+Cross-platform, customizable terminal pager library for rust.
+
+# pager-rs can be used to:
+- show text content with too many lines.
+- dialog with user using [`custom commands`].
+
+# Usage
+See: [examples]
+
+[examples]: https://github.com/ketenburhan/pager-rs/tree/main/examples
+[`custom commands`]: Command
+*/
+
 use crossterm::{
     cursor,
     event::{self, Event, KeyCode, KeyEvent, MouseEvent, MouseEventKind},
@@ -12,6 +26,7 @@ pub use status_bar::*;
 mod state;
 pub use state::*;
 
+/// Run a [`State`]
 pub fn run(state: &mut State) -> std::io::Result<()> {
     let mut out = stdout();
     disable_raw_mode()?;
@@ -93,6 +108,10 @@ pub fn run(state: &mut State) -> std::io::Result<()> {
     Ok(())
 }
 
+/// Setup terminal for running [`State`].
+/// Enter alternate screen, enable mouse capture, hide the cursor.
+///
+/// This function must be called before the [`run`] function.
 pub fn init() -> std::io::Result<()> {
     let mut out = stdout();
     execute!(
@@ -103,6 +122,8 @@ pub fn init() -> std::io::Result<()> {
     )
 }
 
+/// Undo [`init`].
+/// Leave alternate screen, disable mouse capture, show the cursor.
 pub fn finish() -> std::io::Result<()> {
     let mut out = stdout();
     execute!(
