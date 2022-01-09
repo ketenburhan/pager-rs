@@ -246,12 +246,12 @@ impl State {
                         KeyCode::BackTab => "BackTab".to_string(),
                         KeyCode::Delete => "Delete".to_string(),
                         KeyCode::Insert => "Insert".to_string(),
-                        KeyCode::F(n) => "F".to_string() + &n.to_string(),
+                        KeyCode::F(n) => format!("F{}", n),
                         KeyCode::Char(c) => c.to_string(),
                         KeyCode::Null => "Null".to_string(),
                         KeyCode::Esc => "Esc".to_string(),
                     },
-                    CommandType::Colon(s) => ":".to_owned() + s,
+                    CommandType::Colon(s) => format!(":{}", s),
                 })
                 .collect::<Vec<String>>()
                 .join(", ");
@@ -263,11 +263,14 @@ impl State {
         items
             .map(|(name, desc)| {
                 let name_len = name.len();
-                name + &" ".repeat(padding - name_len)
-                    + &desc
-                        .lines()
+                format!(
+                    "{}{gap}{}",
+                    name,
+                    desc.lines()
                         .collect::<Vec<&str>>()
-                        .join(("\n".to_string() + &" ".repeat(padding)).as_str())
+                        .join(format!("\n{}", " ".repeat(padding)).as_str()),
+                    gap = " ".repeat(padding - name_len),
+                )
             })
             .collect::<Vec<String>>()
             .join("\n\n")
@@ -294,13 +297,15 @@ impl State {
                     String::new()
                 };
                 let line_indicator_len = line_indicator.len();
-                line_indicator
-                    + line
+                format!(
+                    "{line_indicator}{visible_content_line}",
+                    line_indicator = line_indicator,
+                    visible_content_line = line
                         .chars()
                         .skip(self.pos.0)
                         .take(self.size.0 as usize - line_indicator_len)
                         .collect::<String>()
-                        .as_str()
+                )
             })
             .collect::<Vec<String>>()
             .join("\n")

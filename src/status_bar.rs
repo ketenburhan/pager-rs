@@ -98,11 +98,18 @@ impl StatusBar {
                 if parts[0].len() > width {
                     parts[0].chars().take(width).collect()
                 } else if parts[0].len() + parts[1].len() > width {
-                    parts[0].clone() + &" ".repeat(width - parts[0].len())
+                    format!(
+                        "{left}{gap}",
+                        left = parts[0],
+                        gap = " ".repeat(width - parts[0].len())
+                    )
                 } else {
-                    parts[0].clone()
-                        + &" ".repeat(width - parts[0].len() - parts[1].len())
-                        + &parts[1]
+                    format!(
+                        "{left}{gap}{right}",
+                        left = parts[0].clone(),
+                        gap = " ".repeat(width - parts[0].len() - parts[1].len()),
+                        right = parts[1]
+                    )
                 }
             })
             .collect::<Vec<String>>()
