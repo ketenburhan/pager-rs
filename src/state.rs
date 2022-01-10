@@ -296,7 +296,7 @@ impl State {
                 } else {
                     String::new()
                 };
-                let line_indicator_len = line_indicator.len();
+                let line_indicator_len = line_indicator.chars().count();
                 format!(
                     "{line_indicator}{visible_content_line}",
                     line_indicator = line_indicator,
