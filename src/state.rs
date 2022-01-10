@@ -333,8 +333,12 @@ impl State {
 
     /// Move cursor left.
     pub fn left(&mut self) -> bool {
-        if self.pos.0 != 0 {
-            self.pos.0 -= 1;
+        let amount = self.size.0 as usize / 2;
+        if self.pos.0 >= amount {
+            self.pos.0 -= amount;
+            return true;
+        } else if self.pos.0 != 0 {
+            self.pos.0 = 0;
             return true;
         }
         false
@@ -342,7 +346,8 @@ impl State {
 
     /// Move cursor right.
     pub fn right(&mut self) -> bool {
-        self.pos.0 += 1;
+        let amount = self.size.0 as usize / 2;
+        self.pos.0 += amount;
         true
     }
 
