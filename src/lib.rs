@@ -86,7 +86,8 @@ pub fn run(state: &mut State) -> std::io::Result<()> {
             Event::Resize(x, y) => {
                 state.size = (x, y);
                 true
-            }
+            },
+            _ => false,
         };
         if flush {
             disable_raw_mode()?;
