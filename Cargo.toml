@@ -1,6 +1,6 @@
 [package]
 name = "pager-rs"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Burhan Keten <ketenburhan@protonmail.com>"]
 edition = "2021"
 description = "Cross-platform, customizable terminal pager library for rust."
