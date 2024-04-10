@@ -12,6 +12,8 @@ See: [examples]
 [`custom commands`]: Command
 */
 
+#![warn(missing_docs)]
+
 use crossterm::{
     cursor,
     event::{self, Event, KeyCode, KeyEvent, MouseEvent, MouseEventKind},
@@ -86,7 +88,7 @@ pub fn run(state: &mut State) -> std::io::Result<()> {
             Event::Resize(x, y) => {
                 state.size = (x, y);
                 true
-            },
+            }
             _ => false,
         };
         if flush {
