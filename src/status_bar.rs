@@ -2,12 +2,20 @@ use crossterm::style::{Attribute, Color, ContentStyle, StyledContent, Stylize};
 
 use crate::State;
 
+/// Layout items for StatusBar.
 #[derive(Clone, Debug)]
 pub enum StatusBarLayoutItem {
+    /// Display static text.
     Text(String),
+    /// Display pesrsentage of current position to bottom.
     Persentage,
+    /// Display total line count.
     LineCount,
+    /// Display current line
     CurrentLine,
+    /// Display title of [`StatusBar`]
+    ///
+    /// See: [`StatusBar::title`]
     Title,
 }
 
@@ -62,10 +70,16 @@ impl StatusBarLayout {
     }
 }
 
+/// StatusBar defination
 #[derive(Clone, Debug)]
 pub struct StatusBar {
+    /// `Vec` of [`StatusBarLayout`] for each StatusBar line.
     pub line_layouts: Vec<StatusBarLayout>,
+    /// Title of StatusBar. It will be used as [`StatusBarLayoutItem::Title`]
     pub title: String,
+    /// Theme for StatusBar.
+    ///
+    /// See: [`ContentStyle`]
     pub theme: ContentStyle,
 }
 

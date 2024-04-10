@@ -6,7 +6,7 @@ use crossterm::{
 
 use crate::{run, status_bar::StatusBar, StatusBarLayout, StatusBarLayoutItem};
 
-/// Type of [`Command`]
+/// Type of [`Command`].
 #[derive(Clone, PartialEq)]
 pub enum CommandType {
     /// Waits for `:` key and then the command input, until Enter is pressed.
@@ -15,6 +15,7 @@ pub enum CommandType {
     Key(KeyCode),
 }
 
+/// Command definition
 #[derive(Clone)]
 pub struct Command {
     /// When any of the values matched with input from user, command will be executed.
@@ -187,6 +188,7 @@ impl Default for CommandList {
     }
 }
 
+/// State that can be ran with `pager_rs::run`
 pub struct State<'a> {
     /// Cursor position in content.
     ///
@@ -204,16 +206,18 @@ pub struct State<'a> {
     /// status bar at the bottom.
     pub status_bar: StatusBar,
 
+    /// List of `Commands` that runnable in this `State`.
     pub commands: CommandList,
 
     pub(crate) running: bool,
 
+    /// Show/Hide line numbers.
     pub show_line_numbers: bool,
 
     /// Enable/Disable word-wrap
     pub word_wrap: bool,
 
-    /// `textwrap::Options` to use when word-wrap is enabled.
+    /// [`textwrap::Options`] to use when word-wrap is enabled.
     ///
     /// The `width` is not important since it will be replaced by terminal screen width when rendering text.
     pub word_wrap_option: textwrap::Options<'a>,
@@ -239,6 +243,7 @@ impl<'a> State<'a> {
         })
     }
 
+    /// Returns true if the State is still runing.
     pub fn is_running(&self) -> bool {
         self.running
     }
