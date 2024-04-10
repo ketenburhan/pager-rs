@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use crossterm::{
     event::KeyCode,
     style::{Attribute, Color, ContentStyle, Stylize},
@@ -212,8 +210,12 @@ pub struct State<'a> {
 
     pub show_line_numbers: bool,
 
+    /// Enable/Disable word-wrap
     pub word_wrap: bool,
 
+    /// `textwrap::Options` to use when word-wrap is enabled.
+    ///
+    /// The `width` is not important since it will be replaced by terminal screen width when rendering text.
     pub word_wrap_option: textwrap::Options<'a>,
 }
 
@@ -312,14 +314,15 @@ impl<'a> State<'a> {
 }
 
 impl<'a> State<'a> {
-    pub fn get_line_inducator(
+    /// Get line inducator of given line number.
+    fn get_line_inducator(
         &self,
         line_number: usize,
         max_line_number_width: usize,
-        sub_line: bool,
+        blank: bool,
     ) -> String {
         if self.show_line_numbers {
-            let content = if sub_line {
+            let content = if blank {
                 String::from(" ")
             } else {
                 line_number.to_string()
