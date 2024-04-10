@@ -14,3 +14,4 @@ documentation = "https://docs.rs/pager-rs"
 
 [dependencies]
 crossterm = "0.27.0"
+textwrap = "0.16"

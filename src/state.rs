@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crossterm::{
     event::KeyCode,
     style::{Attribute, Color, ContentStyle, Stylize},
@@ -138,6 +140,8 @@ impl CommandList {
                     commands,
                     running: true,
                     show_line_numbers: false,
+                    word_wrap: false,
+                    word_wrap_option: textwrap::Options::new(0),
                 };
                 run(&mut help).unwrap();
                 true
@@ -157,6 +161,20 @@ impl CommandList {
             },
         }])
     }
+
+    /// Default 'toggle word wrap' command
+    pub fn toggle_word_wrap() -> Self {
+        use CommandType::*;
+        Self(vec![Command {
+            cmd: vec![Key(KeyCode::Char('w'))],
+            desc: "Activate/Deactivate word wrap".to_string(),
+            func: &|state: &mut State| {
+                state.word_wrap = !state.word_wrap;
+
+                true
+            },
+        }])
+    }
 }
 
 impl Default for CommandList {
@@ -166,11 +184,12 @@ impl Default for CommandList {
             Self::navigation(),
             Self::help(),
             Self::toggle_line_numbers(),
+            Self::toggle_word_wrap(),
         ])
     }
 }
 
-pub struct State {
+pub struct State<'a> {
     /// Cursor position in content.
     ///
     /// `(x, y)`
@@ -192,9 +211,13 @@ pub struct State {
     pub(crate) running: bool,
 
     pub show_line_numbers: bool,
+
+    pub word_wrap: bool,
+
+    pub word_wrap_option: textwrap::Options<'a>,
 }
 
-impl State {
+impl<'a> State<'a> {
     /// Create new [`State`]
     pub fn new(
         content: String,
@@ -209,6 +232,8 @@ impl State {
             commands,
             running: true,
             show_line_numbers: true,
+            word_wrap: false,
+            word_wrap_option: textwrap::Options::new(0),
         })
     }
 
@@ -286,42 +311,82 @@ impl State {
     }
 }
 
-impl State {
+impl<'a> State<'a> {
+    pub fn get_line_inducator(
+        &self,
+        line_number: usize,
+        max_line_number_width: usize,
+        sub_line: bool,
+    ) -> String {
+        if self.show_line_numbers {
+            let content = if sub_line {
+                String::from(" ")
+            } else {
+                line_number.to_string()
+            };
+
+            format!(
+                "{:line_count$}│",
+                content,
+                line_count = max_line_number_width
+            )
+        } else {
+            String::new()
+        }
+    }
+
     /// Get text to be printed on terminal except for the [`StatusBar`].
     pub fn get_visible(&self) -> String {
         let max_line_number_width = self.content.lines().count().to_string().len();
-        self.content
-            .lines()
-            .enumerate()
+
+        let line_indicator_len = max_line_number_width + 1;
+
+        let lines: Box<dyn Iterator<Item = (usize, String)>> = match &self.word_wrap {
+            true => Box::new(self.content.lines().enumerate().flat_map(|(index, line)| {
+                let option = self
+                    .word_wrap_option
+                    .clone()
+                    .width(self.size.0 as usize - line_indicator_len);
+                textwrap::wrap(line, option)
+                    .into_iter()
+                    .map(move |vline| (index, vline.to_string()))
+            })),
+            false => Box::new(
+                self.content
+                    .lines()
+                    .enumerate()
+                    .map(|(index, line)| (index, line.to_owned())),
+            ),
+        };
+
+        let mut last_index: usize = usize::MAX;
+
+        lines
             .skip(self.pos.1)
             .take(self.size.1 as usize - self.status_bar.line_layouts.len())
             .map(|(index, line)| -> String {
-                let line_indicator = if self.show_line_numbers {
-                    format!(
-                        "{:line_count$}│",
-                        index + 1,
-                        line_count = max_line_number_width
-                    )
-                } else {
-                    String::new()
-                };
-                let line_indicator_len = line_indicator.chars().count();
-                format!(
+                let line = format!(
                     "{line_indicator}{visible_content_line}",
-                    line_indicator = line_indicator,
+                    line_indicator = self.get_line_inducator(
+                        index + 1,
+                        max_line_number_width,
+                        last_index == index
+                    ),
                     visible_content_line = line
                         .chars()
                         .skip(self.pos.0)
                         .take(self.size.0 as usize - line_indicator_len)
                         .collect::<String>()
-                )
+                );
+                last_index = index;
+                line
             })
             .collect::<Vec<String>>()
             .join("\n")
     }
 }
 
-impl State {
+impl<'a> State<'a> {
     /// Move cursor up.
     pub fn up(&mut self) -> bool {
         if self.pos.1 != 0 {
@@ -403,7 +468,7 @@ impl State {
     }
 }
 
-impl State {
+impl<'a> State<'a> {
     /// Find and execute command matching with pressed key.
     pub fn match_key_event(&mut self, code: KeyCode) -> bool {
         let mut commands = self.commands.0.clone();
